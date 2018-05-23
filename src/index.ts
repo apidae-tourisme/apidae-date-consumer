@@ -7,6 +7,7 @@ const basicClient = new kafka.Client(ZOOKEEPER_URL);
 if (process.argv.length === 3) {
     let typeArg = process.argv[2];
     const apidateType = typeArg.split('=')[1];
+    console.log('Trying to subscribe to topic ' + apidateType);
     startProcessing(apidateType);
 } else {
     console.log('unsupported args: ' + process.argv.join(' '));
@@ -16,6 +17,7 @@ if (process.argv.length === 3) {
 function startProcessing(apidateType: string) {
     const fetchRequests = [{topic: apidateType}];
     const consumer = new kafka.Consumer(basicClient, fetchRequests, {autoCommit: true});
+    console.log('Successfully subscribed to topic ' + apidateType);
     consumer.on('error', (error: Error) => {
         console.log('consumer error : ' + error.message);
     });
