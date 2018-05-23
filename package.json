@@ -1,0 +1,23 @@
+{
+  "name": "apidae-date-consumer",
+  "version": "0.1.0",
+  "description": "Apache Kafka consumer for apidae-date",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run build:live",
+    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts"
+  },
+  "license": "GPL-3.0",
+  "dependencies": {
+    "kafka-node": "^2.6.1",
+    "request": "^2.85.0"
+  },
+  "devDependencies": {
+    "@types/kafka-node": "^2.0.6",
+    "@types/node": "^10.0.7",
+    "@types/request": "^2.47.0",
+    "nodemon": "^1.17.4",
+    "ts-node": "^6.0.3",
+    "typescript": "^2.8.3"
+  }
+}
