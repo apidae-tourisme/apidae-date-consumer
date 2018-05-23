@@ -1,8 +1,8 @@
 import request = require('request');
 import kafka = require('kafka-node');
-import {DB_PASSWORD, DB_URL, DB_USER, ZOOKEEPER_URL} from "./config";
+import {DB_PASSWORD, DB_URL, DB_USER, KAFKA_HOST} from "./config";
 
-const basicClient = new kafka.Client(ZOOKEEPER_URL);
+const basicClient = new kafka.KafkaClient({kafkaHost: KAFKA_HOST});
 
 if (process.argv.length === 3) {
     let typeArg = process.argv[2];
