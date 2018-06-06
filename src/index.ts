@@ -1,6 +1,6 @@
 import request = require('request');
 import kafka = require('kafka-node');
-import {DB_PASSWORD, DB_URL, DB_USER, KAFKA_HOST} from "./config";
+import {DB_URL, KAFKA_HOST} from "./config";
 
 const basicClient = new kafka.KafkaClient({kafkaHost: KAFKA_HOST});
 
@@ -41,8 +41,7 @@ function startProcessing(apidateType: string) {
 }
 
 function cloneDocument(apidateType: string, payload: any) {
-    request.get(`${DB_URL}/_design/api/_list/details/by-external-id?key="${payload.sourceObjectId}"&type=${apidateType}`,
-        {auth: {user: DB_USER, password: DB_PASSWORD}},
+    request.get(`${DB_URL}/_design/api/_list/details/by-external-id?key="${payload.sourceObjectId}"&type=${apidateType}`, {},
         (error, response, body) => {
             if (!error && response.statusCode === 200) {
                 let clonedDoc = JSON.parse(body);
@@ -51,7 +50,6 @@ function cloneDocument(apidateType: string, payload: any) {
                 clonedDoc.updatedAt = new Date().getTime();
                 request.post(DB_URL, {
                     headers: {'content-type': 'application/json'},
-                    auth: {user: DB_USER, password: DB_PASSWORD},
                     json: clonedDoc
                 }, (err: any, resp: any, bdy: any) => {
                     if (!err && resp.statusCode === 201 && bdy.ok) {
@@ -70,12 +68,12 @@ function cloneDocument(apidateType: string, payload: any) {
 
 function deleteDocument(apidateType: string, payload: any) {
     request.get(`${DB_URL}/_design/api/_list/ids/by-type-and-external-id?key=["${apidateType}","${payload.periodId}"]`,
-        {auth: {user: DB_USER, password: DB_PASSWORD}},
+        {},
         (error, response, body) => {
             if (!error && response.statusCode === 200) {
                 let docsToDelete = JSON.parse(body);
                 for (let doc of docsToDelete) {
-                    request.delete(`${DB_URL}/${doc.id}?rev=${doc.rev}`, {auth: {user: DB_USER, password: DB_PASSWORD}},
+                    request.delete(`${DB_URL}/${doc.id}?rev=${doc.rev}`, {},
                         (err, resp, bdy) => {
                             let respBody = JSON.parse(bdy);
                             if (!err && resp.statusCode === 200 && respBody.ok) {
