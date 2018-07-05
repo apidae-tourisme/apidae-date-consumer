@@ -4,25 +4,29 @@ import {DB_PASSWORD, DB_URL, DB_USER, KAFKA_HOST} from "./config";
 
 const basicClient = new kafka.KafkaClient({kafkaHost: KAFKA_HOST});
 
+function customLog(msg: string) {
+    console.log((+ new Date()) + ' - ' + msg);
+}
+
 if (process.argv.length === 3) {
     let typeArg = process.argv[2];
     const apidateType = typeArg.split('=')[1];
-    console.log('Trying to subscribe to topic ' + apidateType);
+    customLog('Trying to subscribe to topic ' + apidateType);
     startProcessing(apidateType);
 } else {
-    console.log('unsupported args: ' + process.argv.join(' '));
+    customLog('unsupported args: ' + process.argv.join(' '));
     process.exit(1);
 }
 
 function startProcessing(apidateType: string) {
     const fetchRequests = [{topic: apidateType}];
     const consumer = new kafka.Consumer(basicClient, fetchRequests, {autoCommit: true});
-    console.log('Successfully subscribed to topic ' + apidateType);
+    customLog('Successfully subscribed to topic ' + apidateType);
     consumer.on('error', (error: Error) => {
-        console.log('consumer error : ' + error.message);
+        customLog('consumer error : ' + error.message);
     });
     consumer.on('offsetOutOfRange', (error: Error) => {
-        console.log('consumer offsetOutOfRange : ' + error.message);
+        customLog('consumer offsetOutOfRange : ' + error.message);
     });
     consumer.on('message', (message: kafka.Message) => {
         try {
@@ -32,10 +36,10 @@ function startProcessing(apidateType: string) {
             } else if (payload.operation === 'DELETE_PERIOD') {
                 deleteDocument(apidateType, payload);
             } else {
-                console.log('unsupported operation: ' + payload.operation);
+                customLog('unsupported operation: ' + payload.operation);
             }
         } catch (e) {
-            console.log('invalid message value : ' + message.value);
+            customLog('invalid message value : ' + message.value);
         }
     });
 }
@@ -55,14 +59,14 @@ function cloneDocument(apidateType: string, payload: any) {
                     json: clonedDoc
                 }, (err: any, resp: any, bdy: any) => {
                     if (!err && resp.statusCode === 201 && bdy.ok) {
-                        console.log('created duplicate doc ' + payload.duplicatedObjectId + ': ' + bdy.id);
+                        customLog('created duplicate doc ' + payload.duplicatedObjectId + ': ' + bdy.id);
                     } else {
-                        console.log('failed to duplicate doc ' + payload.sourceObjectId + ': ' +
+                        customLog('failed to duplicate doc ' + payload.sourceObjectId + ': ' +
                             resp.statusCode + ' - ' + (err ? err.message : 'unknown error'));
                     }
                 });
             } else {
-                console.log('failed to retrieve doc ' + payload.sourceObjectId + ': ' +
+                customLog('failed to retrieve doc ' + payload.sourceObjectId + ': ' +
                     response.statusCode + ' - ' + (error ? error.message : 'unknown error'));
             }
         });
@@ -79,15 +83,15 @@ function deleteDocument(apidateType: string, payload: any) {
                         (err, resp, bdy) => {
                             let respBody = JSON.parse(bdy);
                             if (!err && resp.statusCode === 200 && respBody.ok) {
-                                console.log('deleted doc ' + payload.periodId + ': ' + respBody.id + ' | ' + respBody.rev);
+                                customLog('deleted doc ' + payload.periodId + ': ' + respBody.id + ' | ' + respBody.rev);
                             } else {
-                                console.log('failed to delete doc ' + payload.periodId + ': ' +
+                                customLog('failed to delete doc ' + payload.periodId + ': ' +
                                     resp.statusCode + ' - ' + (err ? err.message : 'unknown error'));
                             }
                         });
                 }
             } else {
-                console.log('failed to retrieve doc ' + payload.periodId + ': ' +
+                customLog('failed to retrieve doc ' + payload.periodId + ': ' +
                     response.statusCode + ' - ' + (error ? error.message : 'unknown error'));
             }
         });
