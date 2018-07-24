@@ -65,10 +65,11 @@ function cloneDocument(apidateType: string, payload: any) {
                             resp.statusCode + ' - ' + (err ? err.message : 'unknown error'));
                     }
                 });
-            } else {
-                customLog('failed to retrieve doc ' + payload.sourceObjectId + ': ' +
-                    response.statusCode + ' - ' + (error ? error.message : 'unknown error'));
             }
+            // else {
+            //     customLog('failed to retrieve doc ' + payload.sourceObjectId + ': ' +
+            //         response.statusCode + ' - ' + (error ? error.message : 'unknown error'));
+            // }
         });
 }
 
@@ -90,9 +91,10 @@ function deleteDocument(apidateType: string, payload: any) {
                             }
                         });
                 }
-            } else {
-                customLog('failed to retrieve doc ' + payload.periodId + ': ' +
-                    response.statusCode + ' - ' + (error ? error.message : 'unknown error'));
             }
+            // else {
+            //     customLog('failed to retrieve doc ' + payload.periodId + ': ' +
+            //         response.statusCode + ' - ' + (error ? error.message : 'unknown error'));
+            // }
         });
 }
