@@ -1,6 +1,6 @@
 {
   "name": "apidae-date-consumer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Apache Kafka consumer for apidae-date",
   "main": "index.js",
   "scripts": {
@@ -10,11 +10,13 @@
   "license": "GPL-3.0",
   "dependencies": {
     "kafka-node": "^2.6.1",
+    "raven": "^2.6.3",
     "request": "^2.85.0"
   },
   "devDependencies": {
     "@types/kafka-node": "^2.0.6",
     "@types/node": "^10.0.7",
+    "@types/raven": "^2.5.1",
     "@types/request": "^2.47.0",
     "nodemon": "^1.17.4",
     "ts-node": "^6.0.3",

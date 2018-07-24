@@ -1,8 +1,10 @@
 import request = require('request');
 import kafka = require('kafka-node');
-import {DB_PASSWORD, DB_URL, DB_USER, KAFKA_HOST} from "./config";
+import sentry = require('raven');
+import {DB_PASSWORD, DB_URL, DB_USER, KAFKA_HOST, SENTRY_DNS} from "./config";
 
 const basicClient = new kafka.KafkaClient({kafkaHost: KAFKA_HOST});
+sentry.config(SENTRY_DNS).install();
 
 function customLog(msg: string) {
     console.log((+ new Date()) + ' - ' + msg);
@@ -11,7 +13,7 @@ function customLog(msg: string) {
 if (process.argv.length === 3) {
     let typeArg = process.argv[2];
     const apidateType = typeArg.split('=')[1];
-    customLog('Trying to subscribe to topic ' + apidateType);
+    customLog('Subscribing to topic ' + apidateType);
     startProcessing(apidateType);
 } else {
     customLog('unsupported args: ' + process.argv.join(' '));
@@ -21,12 +23,13 @@ if (process.argv.length === 3) {
 function startProcessing(apidateType: string) {
     const fetchRequests = [{topic: apidateType}];
     const consumer = new kafka.Consumer(basicClient, fetchRequests, {autoCommit: true});
-    customLog('Successfully subscribed to topic ' + apidateType);
     consumer.on('error', (error: Error) => {
-        customLog('consumer error : ' + error.message);
+        customLog('consumer error: ' + error.message);
+        sentry.captureMessage('consumer error: ' + error.message);
     });
     consumer.on('offsetOutOfRange', (error: Error) => {
-        customLog('consumer offsetOutOfRange : ' + error.message);
+        customLog('consumer offsetOutOfRange: ' + error.message);
+        sentry.captureMessage('consumer offsetOutOfRange: ' + error.message);
     });
     consumer.on('message', (message: kafka.Message) => {
         try {
@@ -39,7 +42,8 @@ function startProcessing(apidateType: string) {
                 customLog('unsupported operation: ' + payload.operation);
             }
         } catch (e) {
-            customLog('invalid message value : ' + message.value);
+            customLog('invalid message value: ' + message.value);
+            sentry.captureMessage('invalid message value: ' + message.value);
         }
     });
 }
