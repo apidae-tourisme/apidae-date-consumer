@@ -38,6 +38,8 @@ function startProcessing(apidateType: string) {
                 cloneDocument(apidateType, payload);
             } else if (payload.operation === 'DELETE_PERIOD') {
                 deleteDocument(apidateType, payload);
+            } else if (payload.operation === 'UPDATE_PERIOD') {
+                updateDocument(apidateType, payload);
             } else {
                 customLog('unsupported operation: ' + payload.operation);
             }
@@ -101,4 +103,31 @@ function deleteDocument(apidateType: string, payload: any) {
             //         response.statusCode + ' - ' + (error ? error.message : 'unknown error'));
             // }
         });
+}
+
+function updateDocument(apidateType: string, payload: any) {
+    request.get(`${DB_URL}/_design/api/_list/ids/by-type-and-external-id?key=["${apidateType}","${payload.periodId}"]`,
+        {auth: {user: DB_USER, password: DB_PASSWORD}},
+        (error, response, body) => {
+            if (!error && response.statusCode === 200) {
+                let resp_body = JSON.parse(body);
+                let docToUpdate = resp_body[0];
+                if (docToUpdate && docToUpdate.id) {
+                    request.put(`${DB_URL}/${docToUpdate.id}?rev=${docToUpdate.rev}`, {
+                        headers: {'content-type': 'application/json'},
+                        auth: {user: DB_USER, password: DB_PASSWORD},
+                        json: {...docToUpdate, ...payload.updatedObject}
+                    }, (err, resp, bdy) => {
+                        let respBody = JSON.parse(bdy);
+                        if (!err && resp.statusCode === 200 && respBody.ok) {
+                            customLog('updated doc ' + payload.periodId + ': ' + respBody.id + ' | ' + respBody.rev);
+                        } else {
+                            customLog('failed to update doc ' + payload.periodId + ': ' +
+                                resp.statusCode + ' - ' + (err ? err.message : 'unknown error'));
+                        }
+                    });
+                }
+            }
+        }
+    );
 }
