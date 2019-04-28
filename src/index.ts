@@ -25,11 +25,11 @@ function startProcessing(apidateType: string) {
     const consumer = new kafka.Consumer(basicClient, fetchRequests, {groupId: 'apidae-date-consumer', autoCommit: true});
     consumer.on('error', (error: Error) => {
         customLog('consumer error: ' + error.message);
-        sentry.captureMessage('consumer error: ' + error.message);
+        // sentry.captureMessage('consumer error: ' + error.message);
     });
     consumer.on('offsetOutOfRange', (error: Error) => {
         customLog('consumer offsetOutOfRange: ' + error.message);
-        sentry.captureMessage('consumer offsetOutOfRange: ' + error.message);
+        // sentry.captureMessage('consumer offsetOutOfRange: ' + error.message);
     });
     consumer.on('message', (message: kafka.Message) => {
         try {
