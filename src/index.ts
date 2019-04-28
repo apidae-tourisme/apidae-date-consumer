@@ -113,6 +113,9 @@ function updateDocument(apidateType: string, payload: any) {
                 let resp_body = JSON.parse(body);
                 let docToUpdate = resp_body[0];
                 if (docToUpdate && docToUpdate.id) {
+                    customLog('docToUpdate : ' + JSON.stringify(docToUpdate));
+                    customLog('updatedObject : ' + JSON.stringify(payload.updatedObject));
+                    customLog('merged : ' + JSON.stringify({...docToUpdate, ...payload.updatedObject}));
                     request.put(`${DB_URL}/${docToUpdate.id}?rev=${docToUpdate.rev}`, {
                         headers: {'content-type': 'application/json'},
                         auth: {user: DB_USER, password: DB_PASSWORD},
