@@ -22,7 +22,8 @@ if (process.argv.length === 3) {
 
 function startProcessing(apidateType: string) {
     const fetchRequests = [{topic: apidateType}];
-    const consumer = new kafka.Consumer(basicClient, fetchRequests, {autoCommit: true});
+    const consumer = new kafka.Consumer(basicClient, fetchRequests, {autoCommit: true, groupId: 'apidae-date-consumer'});
+    consumer.setOffset(apidateType, 0, 1509050);
     consumer.on('error', (error: Error) => {
         customLog('consumer error: ' + error.message);
         // sentry.captureMessage('consumer error: ' + error.message);
