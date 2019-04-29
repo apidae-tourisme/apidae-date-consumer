@@ -112,6 +112,7 @@ function updateDocument(apidateType: string, payload: any) {
             if (!error && response.statusCode === 200) {
                 let resp_body = JSON.parse(body);
                 let docToUpdate = resp_body[0];
+                console.log('docToUpdate : ' + JSON.stringify(docToUpdate));
                 if (docToUpdate && docToUpdate.id) {
                     // customLog('docToUpdate : ' + JSON.stringify(docToUpdate));
                     // customLog('updatedObject : ' + JSON.stringify(payload.updatedObject));
