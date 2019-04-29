@@ -120,15 +120,19 @@ function updateDocument(apidateType: string, payload: any) {
                 let docToUpdate = resp_body[0];
                 console.log('docToUpdate : ' + JSON.stringify(docToUpdate));
                 if (docToUpdate && docToUpdate.id) {
-                    // customLog('docToUpdate : ' + JSON.stringify(docToUpdate));
-                    // customLog('updatedObject : ' + JSON.stringify(payload.updatedObject));
-                    // customLog('merged : ' + JSON.stringify({...docToUpdate, ...payload.updatedObject}));
+                    customLog('docToUpdate : ' + JSON.stringify(docToUpdate));
+                    customLog('updatedObject : ' + JSON.stringify(payload.updatedObject));
+                    customLog('merged : ' + JSON.stringify({...docToUpdate, ...payload.updatedObject}));
                     request.put(`${DB_URL}/${docToUpdate.id}?rev=${docToUpdate.rev}`, {
                         headers: {'content-type': 'application/json'},
                         auth: {user: DB_USER, password: DB_PASSWORD},
                         json: docToUpdate
                         // json: {...docToUpdate, ...payload.updatedObject}
                     }, (err, resp, bdy) => {
+                        customLog('err : ' + JSON.stringify(err));
+                        customLog('resp : ' + JSON.stringify(resp));
+                        customLog('body : ' + JSON.stringify(body));
+
                         let respBody = JSON.parse(bdy);
                         if (!err && resp.statusCode === 200 && respBody.ok) {
                             customLog('updated doc ' + payload.periodId + ': ' + respBody.id + ' | ' + respBody.rev);
