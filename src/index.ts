@@ -3,7 +3,9 @@ import kafka = require('kafka-node');
 import sentry = require('raven');
 import {DB_PASSWORD, DB_URL, DB_USER, KAFKA_HOST, SENTRY_DNS} from "./config";
 
-const basicClient = new kafka.KafkaClient({kafkaHost: KAFKA_HOST});
+// const basicClient = new kafka.KafkaClient({kafkaHost: KAFKA_HOST});
+let consumerGroup: kafka.ConsumerGroup;
+
 sentry.config(SENTRY_DNS).install();
 
 function customLog(msg: string) {
@@ -13,7 +15,11 @@ function customLog(msg: string) {
 if (process.argv.length === 3) {
     let typeArg = process.argv[2];
     const apidateType = typeArg.split('=')[1];
-    customLog('Subscribing to topic ' + apidateType);
+    customLog('Creating consumer group for topic ' + apidateType);
+    consumerGroup = new kafka.ConsumerGroup(
+        {kafkaHost: KAFKA_HOST, groupId: 'apidae-date', fromOffset: 'latest', autoCommit: true},
+        apidateType
+    );
     startProcessing(apidateType);
 } else {
     customLog('unsupported args: ' + process.argv.join(' '));
@@ -21,18 +27,17 @@ if (process.argv.length === 3) {
 }
 
 function startProcessing(apidateType: string) {
-    const fetchRequests = [{topic: apidateType}];
-    const consumer = new kafka.Consumer(basicClient, fetchRequests, {autoCommit: true, groupId: 'apidae-date-consumer'});
-    consumer.setOffset(apidateType, 0, 1509050);
-    consumer.on('error', (error: Error) => {
+    // const fetchRequests = [{topic: apidateType}];
+    // const consumer = new kafka.Consumer(basicClient, fetchRequests, {autoCommit: true, groupId: 'apidae-date-consumer'});
+    consumerGroup.on('error', (error: Error) => {
         customLog('consumer error: ' + error.message);
         // sentry.captureMessage('consumer error: ' + error.message);
     });
-    consumer.on('offsetOutOfRange', (error: Error) => {
+    consumerGroup.on('offsetOutOfRange', (error: Error) => {
         customLog('consumer offsetOutOfRange: ' + error.message);
         // sentry.captureMessage('consumer offsetOutOfRange: ' + error.message);
     });
-    consumer.on('message', (message: kafka.Message) => {
+    consumerGroup.on('message', (message: kafka.Message) => {
         try {
             let payload = JSON.parse(message.value as string);
             if (payload.operation === 'DUPLICATE_PERIOD') {
