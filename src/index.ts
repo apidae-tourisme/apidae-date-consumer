@@ -3,7 +3,6 @@ import kafka = require('kafka-node');
 import sentry = require('raven');
 import {DB_PASSWORD, DB_URL, DB_USER, KAFKA_HOST, SENTRY_DNS} from "./config";
 
-// const basicClient = new kafka.KafkaClient({kafkaHost: KAFKA_HOST});
 let consumerGroup: kafka.ConsumerGroup;
 
 sentry.config(SENTRY_DNS).install();
@@ -17,9 +16,10 @@ if (process.argv.length === 3) {
     const apidateType = typeArg.split('=')[1];
     customLog('Creating consumer group for topic ' + apidateType);
     consumerGroup = new kafka.ConsumerGroup(
-        {kafkaHost: KAFKA_HOST, groupId: 'apidae-date', fromOffset: 'latest', autoCommit: true},
+        {kafkaHost: KAFKA_HOST, groupId: 'apidate-consumer', fromOffset: 'latest', autoCommit: true},
         apidateType
     );
+    customLog('consumer group created');
     startProcessing(apidateType);
 } else {
     customLog('unsupported args: ' + process.argv.join(' '));
@@ -27,15 +27,14 @@ if (process.argv.length === 3) {
 }
 
 function startProcessing(apidateType: string) {
-    // const fetchRequests = [{topic: apidateType}];
-    // const consumer = new kafka.Consumer(basicClient, fetchRequests, {autoCommit: true, groupId: 'apidae-date-consumer'});
+    customLog('startProcessing topic ' + apidateType);
     consumerGroup.on('error', (error: Error) => {
         customLog('consumer error: ' + error.message);
-        // sentry.captureMessage('consumer error: ' + error.message);
+        sentry.captureMessage('consumer error: ' + error.message);
     });
     consumerGroup.on('offsetOutOfRange', (error: Error) => {
         customLog('consumer offsetOutOfRange: ' + error.message);
-        // sentry.captureMessage('consumer offsetOutOfRange: ' + error.message);
+        sentry.captureMessage('consumer offsetOutOfRange: ' + error.message);
     });
     consumerGroup.on('message', (message: kafka.Message) => {
         try {
@@ -112,36 +111,27 @@ function deleteDocument(apidateType: string, payload: any) {
 }
 
 function updateDocument(apidateType: string, payload: any) {
-    request.get(`${DB_URL}/_design/api/_list/ids/by-type-and-external-id?key=["${apidateType}","${payload.periodId}"]`,
+    request.get(`${DB_URL}/_design/api/_view/by-type-and-external-id?key=["${apidateType}","${payload.periodId}"]`,
         {auth: {user: DB_USER, password: DB_PASSWORD}},
         (error, response, body) => {
             if (!error && response.statusCode === 200) {
                 let resp_body = JSON.parse(body);
-                let docToUpdate = resp_body[0];
-                console.log('docToUpdate : ' + JSON.stringify(docToUpdate));
-                if (docToUpdate && docToUpdate.id) {
-                    customLog('docToUpdate : ' + JSON.stringify(docToUpdate));
-                    customLog('updatedObject : ' + JSON.stringify(payload.updatedObject));
-                    customLog('merged : ' + JSON.stringify({...docToUpdate, ...payload.updatedObject}));
-                    request.put(`${DB_URL}/${docToUpdate.id}?rev=${docToUpdate.rev}`, {
+                if (resp_body.rows && resp_body.rows.length === 1) {
+                    let docToUpdate = resp_body.rows[0].value;
+                    request.put(`${DB_URL}/${docToUpdate._id}?rev=${docToUpdate._rev}`, {
                         headers: {'content-type': 'application/json'},
                         auth: {user: DB_USER, password: DB_PASSWORD},
-                        json: docToUpdate
-                        // json: {...docToUpdate, ...payload.updatedObject}
+                        json: {...docToUpdate, ...payload.updatedObject}
                     }, (err, resp, bdy) => {
-                        customLog('err : ' + JSON.stringify(err));
-                        customLog('resp : ' + JSON.stringify(resp));
-                        customLog('body : ' + JSON.stringify(body));
-
-                        let respBody = JSON.parse(bdy);
-                        if (!err && resp.statusCode === 200 && respBody.ok) {
-                            customLog('updated doc ' + payload.periodId + ': ' + respBody.id + ' | ' + respBody.rev);
+                        if (!err && resp.statusCode === 201 && bdy.ok) {
+                            customLog('updated doc ' + payload.periodId + ': ' + bdy.id + ' | ' + bdy.rev);
                         } else {
                             customLog('failed to update doc ' + payload.periodId + ': ' +
                                 resp.statusCode + ' - ' + (err ? err.message : 'unknown error'));
                         }
                     });
                 }
+
             }
         }
     );
