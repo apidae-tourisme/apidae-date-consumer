@@ -3,7 +3,7 @@
 # Apidae Date Consumer
 
 ## Description
-Script permettant le traitement des messages en provenance du bus de messagerie à destination du module Apidae Date.
+Module permettant le traitement des messages en provenance du bus de messagerie à destination du module Apidae Date.
 
 ## Utilisation
 Les types de messages supportés par le client sont les suivants :
@@ -64,5 +64,5 @@ où `periodId` est l'identifiant de période dont la saisie doit être supprimé
 
 ### Mise en place de l'environnement
   - Cloner le repo
-  - npm install
+  - `npm install`
   - `npm start` pour démarrer le script en local, avec rechargement automatique du code
