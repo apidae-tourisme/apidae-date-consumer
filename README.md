@@ -29,7 +29,7 @@ Exemple de message à transmettre dans le bus de messagerie :
   }
 }
 ```
-L'objet transmis dans le champ "updatedObject" sera fusionné avec la saisie existante.
+L'objet transmis dans le champ "updatedObject" sera fusionné avec la saisie existante associée à la période d'ouverture "123456".
 
 ### Duplication d'une saisie sur une période d'ouverture (operation DUPLICATE_PERIOD)
 Exemple de message à transmettre dans le bus de messagerie :
