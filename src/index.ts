@@ -39,7 +39,9 @@ function startProcessing(apidateType: string) {
     consumerGroup.on('message', (message: kafka.Message) => {
         try {
             let payload = JSON.parse(message.value as string);
-            if (payload.operation === 'DUPLICATE_PERIOD') {
+            if (payload.operation === 'ADD_PERIOD') {
+                createDocument(payload);
+            } else if (payload.operation === 'DUPLICATE_PERIOD') {
                 cloneDocument(apidateType, payload);
             } else if (payload.operation === 'DELETE_PERIOD') {
                 deleteDocument(apidateType, payload);
@@ -51,6 +53,21 @@ function startProcessing(apidateType: string) {
         } catch (e) {
             customLog('invalid message value: ' + message.value);
             sentry.captureMessage('invalid message value: ' + message.value);
+        }
+    });
+}
+
+function createDocument(payload: any) {
+    request.post(DB_URL, {
+        headers: {'content-type': 'application/json'},
+        auth: {user: DB_USER, password: DB_PASSWORD},
+        json: payload.payload
+    }, (err: any, resp: any, bdy: any) => {
+        if (!err && resp.statusCode === 201 && bdy.ok) {
+            customLog('created new doc ' + payload.sourceId + ': ' + bdy.id);
+        } else {
+            customLog('failed to create doc ' + payload.sourceId + ': ' +
+                resp.statusCode + ' - ' + (err ? err.message : 'unknown error'));
         }
     });
 }

@@ -9,12 +9,12 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
-    "kafka-node": "^2.6.1",
+    "kafka-node": "^3.0.1",
     "raven": "^2.6.3",
     "request": "^2.85.0"
   },
   "devDependencies": {
-    "@types/kafka-node": "^2.0.6",
+    "@types/kafka-node": "^3.0.0",
     "@types/node": "^10.0.7",
     "@types/raven": "^2.5.1",
     "@types/request": "^2.47.0",
