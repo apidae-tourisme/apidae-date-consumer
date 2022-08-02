@@ -40,7 +40,7 @@ function startProcessing(apidateType: string) {
         try {
             let payload = JSON.parse(message.value as string);
             if (payload.operation === 'ADD_PERIOD') {
-                createDocument(payload);
+                createDocument(apidateType, payload);
             } else if (payload.operation === 'DUPLICATE_PERIOD') {
                 cloneDocument(apidateType, payload);
             } else if (payload.operation === 'DELETE_PERIOD') {
@@ -57,11 +57,12 @@ function startProcessing(apidateType: string) {
     });
 }
 
-function createDocument(payload: any) {
+function createDocument(apidateType: string, payload: any) {
+    const typeData = {type: apidateType};
     request.post(DB_URL, {
         headers: {'content-type': 'application/json'},
         auth: {user: DB_USER, password: DB_PASSWORD},
-        json: payload.payload
+        json: {...payload.payload, ...typeData},
     }, (err: any, resp: any, bdy: any) => {
         if (!err && resp.statusCode === 201 && bdy.ok) {
             customLog('created new doc ' + payload.sourceId + ': ' + bdy.id);
