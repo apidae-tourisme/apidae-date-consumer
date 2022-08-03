@@ -74,7 +74,7 @@ function createDocument(apidateType: string, payload: any) {
 }
 
 function cloneDocument(apidateType: string, payload: any) {
-    request.get(`${DB_URL}/_design/api/_list/details/by-external-id?key="${payload.sourceObjectId}"&type=${apidateType}`,
+    request.get(`${DB_URL}/_design/api/_list/details/by-external-id?key="${payload.sourceId}"&type=${apidateType}`,
         {auth: {user: DB_USER, password: DB_PASSWORD}},
         (error, response, body) => {
             if (!error && response.statusCode === 200) {
@@ -90,7 +90,7 @@ function cloneDocument(apidateType: string, payload: any) {
                     if (!err && resp.statusCode === 201 && bdy.ok) {
                         customLog('created duplicate doc ' + payload.duplicatedObjectId + ': ' + bdy.id);
                     } else {
-                        customLog('failed to duplicate doc ' + payload.sourceObjectId + ': ' +
+                        customLog('failed to duplicate doc ' + payload.sourceId + ': ' +
                             resp.statusCode + ' - ' + (err ? err.message : 'unknown error'));
                     }
                 });
@@ -103,7 +103,7 @@ function cloneDocument(apidateType: string, payload: any) {
 }
 
 function deleteDocument(apidateType: string, payload: any) {
-    request.get(`${DB_URL}/_design/api/_list/ids/by-type-and-external-id?key=["${apidateType}","${payload.periodId}"]`,
+    request.get(`${DB_URL}/_design/api/_list/ids/by-type-and-external-id?key=["${apidateType}","${payload.sourceId}"]`,
         {auth: {user: DB_USER, password: DB_PASSWORD}},
         (error, response, body) => {
             if (!error && response.statusCode === 200) {
@@ -113,23 +113,23 @@ function deleteDocument(apidateType: string, payload: any) {
                         (err, resp, bdy) => {
                             let respBody = JSON.parse(bdy);
                             if (!err && resp.statusCode === 200 && respBody.ok) {
-                                customLog('deleted doc ' + payload.periodId + ': ' + respBody.id + ' | ' + respBody.rev);
+                                customLog('deleted doc ' + payload.sourceId + ': ' + respBody.id + ' | ' + respBody.rev);
                             } else {
-                                customLog('failed to delete doc ' + payload.periodId + ': ' +
+                                customLog('failed to delete doc ' + payload.sourceId + ': ' +
                                     resp.statusCode + ' - ' + (err ? err.message : 'unknown error'));
                             }
                         });
                 }
             }
             // else {
-            //     customLog('failed to retrieve doc ' + payload.periodId + ': ' +
+            //     customLog('failed to retrieve doc ' + payload.sourceId + ': ' +
             //         response.statusCode + ' - ' + (error ? error.message : 'unknown error'));
             // }
         });
 }
 
 function updateDocument(apidateType: string, payload: any) {
-    request.get(`${DB_URL}/_design/api/_view/by-type-and-external-id?key=["${apidateType}","${payload.periodId}"]`,
+    request.get(`${DB_URL}/_design/api/_view/by-type-and-external-id?key=["${apidateType}","${payload.sourceId}"]`,
         {auth: {user: DB_USER, password: DB_PASSWORD}},
         (error, response, body) => {
             if (!error && response.statusCode === 200) {
@@ -139,12 +139,12 @@ function updateDocument(apidateType: string, payload: any) {
                     request.put(`${DB_URL}/${docToUpdate._id}?rev=${docToUpdate._rev}`, {
                         headers: {'content-type': 'application/json'},
                         auth: {user: DB_USER, password: DB_PASSWORD},
-                        json: {...docToUpdate, ...payload.updatedObject}
+                        json: {...docToUpdate, ...payload.payload}
                     }, (err, resp, bdy) => {
                         if (!err && resp.statusCode === 201 && bdy.ok) {
-                            customLog('updated doc ' + payload.periodId + ': ' + bdy.id + ' | ' + bdy.rev);
+                            customLog('updated doc ' + payload.sourceId + ': ' + bdy.id + ' | ' + bdy.rev);
                         } else {
-                            customLog('failed to update doc ' + payload.periodId + ': ' +
+                            customLog('failed to update doc ' + payload.sourceId + ': ' +
                                 resp.statusCode + ' - ' + (err ? err.message : 'unknown error'));
                         }
                     });
