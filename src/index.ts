@@ -149,6 +149,8 @@ function updateDocument(apidateType: string, payload: any) {
                                 resp.statusCode + ' - ' + (err ? err.message : 'unknown error'));
                         }
                     });
+                } else {
+                    customLog('unexpected response: ' + resp_body);
                 }
             }
             else {
