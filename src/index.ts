@@ -2,11 +2,11 @@ import axios, {AxiosInstance} from 'axios';
 import kafka = require('kafka-node');
 import sentry = require('raven');
 import async = require('async');
-import {QueueObject} from "async";
+import {AsyncQueue} from "async";
 import {DB_PASSWORD, DB_URL, DB_USER, KAFKA_HOST, SENTRY_DNS} from "./config";
 
 let consumerGroup: kafka.ConsumerGroup;
-let processingQueue: QueueObject<kafka.Message>;
+let processingQueue: AsyncQueue<kafka.Message>;
 let httpClient: AxiosInstance;
 
 sentry.config(SENTRY_DNS).install();
@@ -44,7 +44,6 @@ if (process.argv.length === 3) {
 
     processingQueue.drain = function() {
         consumerGroup.resume();
-        return Promise.resolve();
     };
 
     startProcessing(apidateType);
