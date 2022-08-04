@@ -39,6 +39,7 @@ function startProcessing(apidateType: string) {
     consumerGroup.on('message', (message: kafka.Message) => {
         try {
             let payload = JSON.parse(message.value as string);
+            customLog('handling message with operation ' + payload.operation + ' and sourceId ' + payload.sourceId);
             if (payload.operation === 'ADD_PERIOD') {
                 createDocument(apidateType, payload);
             } else if (payload.operation === 'DUPLICATE_PERIOD') {
