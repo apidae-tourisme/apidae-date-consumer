@@ -79,7 +79,7 @@ function processMessage(apidateType: string, message: kafka.Message) {
     let result;
     try {
         let payload = JSON.parse(message.value as string);
-        // customLog('handling message with operation ' + payload.operation + ' and sourceId ' + payload.sourceId);
+        customLog('handling message with operation ' + payload.operation + ' and sourceId ' + payload.sourceId);
         if (payload.operation === 'ADD_PERIOD') {
             result = createDocument(apidateType, payload);
         } else if (payload.operation === 'DUPLICATE_PERIOD') {
@@ -166,6 +166,6 @@ function updateDocument(apidateType: string, payload: any) {
                 return Promise.reject('unexpected response: ' + resp_body);
             }
         }).catch(function(error) {
-            customLog('failed to retrieve doc ' + payload.sourceId + ': ' + (error.response ? error.response.status : error.message));
+            // customLog('failed to retrieve doc ' + payload.sourceId + ': ' + (error.response ? error.response.status : error.message));
         });
 }
