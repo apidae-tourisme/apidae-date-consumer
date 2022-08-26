@@ -41,6 +41,7 @@ if (process.argv.length === 3) {
             processingCallback();
         }, function(err) {
             customLog('message processing failure');
+            processingCallback();
         });
     }, 1);
 
