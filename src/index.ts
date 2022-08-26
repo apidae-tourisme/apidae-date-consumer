@@ -39,6 +39,8 @@ if (process.argv.length === 3) {
     processingQueue = async.queue(function(message, processingCallback) {
         processMessage(apidateType, message).then(function(processingResult) {
             processingCallback();
+        }, function(err) {
+            customLog('message processing failure');
         });
     }, 1);
 
@@ -77,7 +79,7 @@ function processMessage(apidateType: string, message: kafka.Message) {
     let result;
     try {
         let payload = JSON.parse(message.value as string);
-        customLog('handling message with operation ' + payload.operation + ' and sourceId ' + payload.sourceId);
+        // customLog('handling message with operation ' + payload.operation + ' and sourceId ' + payload.sourceId);
         if (payload.operation === 'ADD_PERIOD') {
             result = createDocument(apidateType, payload);
         } else if (payload.operation === 'DUPLICATE_PERIOD') {
@@ -123,7 +125,7 @@ function cloneDocument(apidateType: string, payload: any) {
                     (error.response ? error.response.status : error.message));
             });
         }).catch(function(error) {
-            customLog('failed to retrieve doc ' + payload.sourceId + ': ' + (error.response ? error.response.status : error.message));
+            // customLog('failed to retrieve doc ' + payload.sourceId + ': ' + (error.response ? error.response.status : error.message));
         });
 }
 
@@ -142,7 +144,7 @@ function deleteDocument(apidateType: string, payload: any) {
                     (error.response ? error.response.status : error.message));
             })
         }).catch(function(error) {
-            customLog('failed to retrieve doc ' + payload.sourceId + ': ' + (error.response ? error.response.status : error.message));
+            // customLog('failed to retrieve doc ' + payload.sourceId + ': ' + (error.response ? error.response.status : error.message));
         });
 }
 
@@ -160,7 +162,7 @@ function updateDocument(apidateType: string, payload: any) {
                         (error.response ? error.response.status : error.message));
                 });
             } else {
-                customLog('unexpected response: ' + resp_body);
+                // customLog('unexpected response: ' + resp_body);
                 return Promise.reject('unexpected response: ' + resp_body);
             }
         }).catch(function(error) {
